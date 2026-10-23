@@ -11,23 +11,36 @@ export class MyMCP extends McpAgent<any> {
       "Generate an image from a text prompt",
       { prompt: z.string() },
       async ({ prompt }) => {
-        const form = new FormData();
-        form.append("prompt", prompt);
-        form.append("width", "1024");
-        form.append("height", "1024");
-        const formResponse = new Response(form);
-        const res: any = await this.env.AI.run(
-          "@cf/black-forest-labs/flux-2-dev",
-          {
-            multipart: {
-              body: formResponse.body,
-              contentType: formResponse.headers.get("content-type"),
-            },
-          }
-        );
-        return {
-          content: [{ type: "image", data: res.image, mimeType: "image/jpeg" }],
-        };
+        try {
+          const form = new FormData();
+          form.append("prompt", prompt);
+          form.append("width", "1024");
+          form.append("height", "1024");
+          const formResponse = new Response(form);
+          const res: any = await this.env.AI.run(
+            "@cf/black-forest-labs/flux-2-dev",
+            {
+              multipart: {
+                body: formResponse.body,
+                contentType: formResponse.headers.get("content-type"),
+              },
+            }
+          );
+          return {
+            content: [{ type: "image", data: res.image, mimeType: "image/jpeg" }],
+          };
+        } catch (e) {
+          const res: any = await this.env.AI.run(
+            "@cf/black-forest-labs/flux-1-schnell",
+            { prompt, steps: 6 }
+          );
+          return {
+            content: [
+              { type: "text", text: "Note: flux-2-dev was busy, so the faster fallback model was used." },
+              { type: "image", data: res.image, mimeType: "image/jpeg" },
+            ],
+          };
+        }
       }
     );
   }
