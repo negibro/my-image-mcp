@@ -9,11 +9,21 @@ export class MyMCP extends McpAgent<any> {
     this.server.tool(
       "generate_image",
       "Generate an image from a text prompt",
-      { prompt: z.string(), steps: z.number().min(1).max(8).default(4) },
-      async ({ prompt, steps }) => {
+      { prompt: z.string() },
+      async ({ prompt }) => {
+        const form = new FormData();
+        form.append("prompt", prompt);
+        form.append("width", "1024");
+        form.append("height", "1024");
+        const formResponse = new Response(form);
         const res: any = await this.env.AI.run(
-          "@cf/black-forest-labs/flux-1-schnell",
-          { prompt, steps }
+          "@cf/black-forest-labs/flux-2-dev",
+          {
+            multipart: {
+              body: formResponse.body,
+              contentType: formResponse.headers.get("content-type"),
+            },
+          }
         );
         return {
           content: [{ type: "image", data: res.image, mimeType: "image/jpeg" }],
