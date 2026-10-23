@@ -1,0 +1,9 @@
+{
+  "name": "my-image-mcp",
+  "private": true,
+  "dependencies": {
+    "agents": "latest",
+    "@modelcontextprotocol/sdk": "latest",
+    "zod": "latest"
+  }
+}
